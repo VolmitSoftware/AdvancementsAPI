@@ -2,14 +2,12 @@ package eu.endercentral.crazy_advancements.packet;
 
 import eu.endercentral.crazy_advancements.NameKey;
 import eu.endercentral.crazy_advancements.advancement.Advancement;
-import net.minecraft.advancements.AdvancementHolder;
-import net.minecraft.advancements.AdvancementProgress;
-import net.minecraft.network.protocol.game.ClientboundUpdateAdvancementsPacket;
-import net.minecraft.resources.ResourceLocation;
-import org.bukkit.craftbukkit.v1_20_R3.entity.CraftPlayer;
+import eu.endercentral.crazy_advancements.nms.NMS;
+import eu.endercentral.crazy_advancements.nms.api.WAdvancementsPacket;
 import org.bukkit.entity.Player;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Represents an Advancements Packet
@@ -80,29 +78,8 @@ public class AdvancementsPacket {
 	 * 
 	 * @return The Packet
 	 */
-	public ClientboundUpdateAdvancementsPacket build() {
-		//Create Lists
-		List<net.minecraft.advancements.AdvancementHolder> advancements = new ArrayList<>();
-		Set<ResourceLocation> removedAdvancements = new HashSet<>();
-		Map<ResourceLocation, AdvancementProgress> progress = new HashMap<>();
-		
-		//Populate Lists
-		for(Advancement advancement : this.advancements) {
-			net.minecraft.advancements.Advancement nmsAdvancement = convertAdvancement(advancement);
-			advancements.add(new AdvancementHolder(advancement.getName().getMinecraftKey(), nmsAdvancement));
-			progress.put(advancement.getName().getMinecraftKey(), advancement.getProgress(getPlayer()).getNmsProgress());
-		}
-		for(NameKey removed : this.removedAdvancements) {
-			removedAdvancements.add(removed.getMinecraftKey());
-		}
-		
-		//Create Packet
-		ClientboundUpdateAdvancementsPacket packet = new ClientboundUpdateAdvancementsPacket(isReset(), advancements, removedAdvancements, progress);
-		return packet;
-	}
-	
-	protected net.minecraft.advancements.Advancement convertAdvancement(Advancement advancement) {
-		return PacketConverter.toNmsAdvancement(advancement);
+	public WAdvancementsPacket build() {
+		return NMS.get().build(this);
 	}
 	
 	/**
@@ -110,9 +87,6 @@ public class AdvancementsPacket {
 	 * 
 	 */
 	public void send() {
-		ClientboundUpdateAdvancementsPacket packet = build();
-		((CraftPlayer) getPlayer()).getHandle().connection.send(packet, null);
+		NMS.get().send(player, build());
 	}
-	
-	
 }

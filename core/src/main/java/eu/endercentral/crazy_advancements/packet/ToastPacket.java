@@ -1,14 +1,9 @@
 package eu.endercentral.crazy_advancements.packet;
 
 import eu.endercentral.crazy_advancements.advancement.ToastNotification;
-import net.minecraft.advancements.AdvancementHolder;
-import net.minecraft.advancements.AdvancementProgress;
-import net.minecraft.network.protocol.game.ClientboundUpdateAdvancementsPacket;
-import net.minecraft.resources.ResourceLocation;
-import org.bukkit.craftbukkit.v1_20_R3.entity.CraftPlayer;
+import eu.endercentral.crazy_advancements.nms.NMS;
+import eu.endercentral.crazy_advancements.nms.api.WAdvancementsPacket;
 import org.bukkit.entity.Player;
-
-import java.util.*;
 
 /**
  * Represents an Advancements Packet for Toast Notifications
@@ -67,23 +62,8 @@ public class ToastPacket {
 	 * 
 	 * @return The Packet
 	 */
-	public ClientboundUpdateAdvancementsPacket build() {
-		//Create Lists
-		List<AdvancementHolder> advancements = new ArrayList<>();
-		Set<ResourceLocation> removedAdvancements = new HashSet<>();
-		Map<ResourceLocation, AdvancementProgress> progress = new HashMap<>();
-		
-		//Populate Lists
-		if(add) {
-			advancements.add(new AdvancementHolder(ToastNotification.NOTIFICATION_NAME.getMinecraftKey(), PacketConverter.toNmsToastAdvancement(getNotification())));
-			progress.put(ToastNotification.NOTIFICATION_NAME.getMinecraftKey(), ToastNotification.NOTIFICATION_PROGRESS.getNmsProgress());
-		} else {
-			removedAdvancements.add(ToastNotification.NOTIFICATION_NAME.getMinecraftKey());
-		}
-		
-		//Create Packet
-		ClientboundUpdateAdvancementsPacket packet = new ClientboundUpdateAdvancementsPacket(false, advancements, removedAdvancements, progress);
-		return packet;
+	public WAdvancementsPacket build() {
+		return NMS.get().build(this);
 	}
 	
 	/**
@@ -91,11 +71,6 @@ public class ToastPacket {
 	 * 
 	 */
 	public void send() {
-		ClientboundUpdateAdvancementsPacket packet = build();
-		((CraftPlayer) getPlayer()).getHandle().connection.send(packet);
+		NMS.get().send(player, build());
 	}
-	
-	
-	
-	
 }

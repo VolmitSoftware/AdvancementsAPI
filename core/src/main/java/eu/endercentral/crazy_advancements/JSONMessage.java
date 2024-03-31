@@ -1,8 +1,8 @@
 package eu.endercentral.crazy_advancements;
 
+import eu.endercentral.crazy_advancements.nms.NMS;
+import eu.endercentral.crazy_advancements.nms.api.WComponent;
 import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.chat.ComponentSerializer;
-import net.minecraft.network.chat.Component;
 
 /**
  * Represents a Message in JSON Format
@@ -35,10 +35,10 @@ public class JSONMessage {
 	/**
 	 * Gets an NMS representation of an ingame Message
 	 * 
-	 * @return An {@link Component} representation of an ingame Message
+	 * @return An {@link WComponent} representation of an ingame Message
 	 */
-	public Component getBaseComponent() {
-		return Component.Serializer.fromJson(ComponentSerializer.toString(json));
+	public WComponent getBaseComponent() {
+		return NMS.get().toNmsComponent(json);
 	}
 	
 	@Override

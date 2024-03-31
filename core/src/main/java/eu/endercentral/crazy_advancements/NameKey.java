@@ -1,7 +1,5 @@
 package eu.endercentral.crazy_advancements;
 
-import net.minecraft.resources.ResourceLocation;
-
 import java.util.Objects;
 
 /**
@@ -14,8 +12,6 @@ public class NameKey {
 	
 	private final String namespace;
 	private final String key;
-	
-	private transient ResourceLocation mcKey;
 	
 	/**
 	 * Constructor for creating a NameKey
@@ -45,16 +41,6 @@ public class NameKey {
 	}
 	
 	/**
-	 * Generates a {@link NameKey}
-	 * 
-	 * @param from The MinecraftKey to generate from
-	 */
-	public NameKey(ResourceLocation from) {
-		this.namespace = from.getNamespace().toLowerCase();
-		this.key = from.getPath().toLowerCase();
-	}
-	
-	/**
 	 * Gets the namespace
 	 * 
 	 * @return The namespace
@@ -80,16 +66,6 @@ public class NameKey {
 	 */
 	public boolean isSimilar(NameKey anotherNameKey) {
 		return namespace.equals(anotherNameKey.getNamespace()) && key.equals(anotherNameKey.getKey());
-	}
-	
-	/**
-	 * Gets the MinecraftKey equivalent of this NameKey
-	 * 
-	 * @return A {@link ResourceLocation} representation of this NameKey
-	 */
-	public ResourceLocation getMinecraftKey() {
-		if(mcKey == null) mcKey = new ResourceLocation(namespace, key);
-		return mcKey;
 	}
 	
 	@Override

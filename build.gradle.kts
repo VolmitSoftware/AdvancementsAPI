@@ -1,42 +1,96 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import net.minecrell.pluginyml.bukkit.BukkitPluginDescription
 
 plugins {
     id("java")
     id("maven-publish")
-    id("io.papermc.paperweight.userdev") version "1.5.11"
+    id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("io.papermc.paperweight.userdev") version "1.5.11" apply false
     id("net.minecrell.plugin-yml.bukkit") version "0.6.0"
+}
+
+class NMSVersion(val nmsVersion: String, val serverVersion: String)
+infix fun String.toNms(that: String): NMSVersion = NMSVersion(this, that)
+val SUPPORTED_VERSIONS: List<NMSVersion> = listOf(
+/*        "v1_19_R1" toNms "1.19.2-R0.1-SNAPSHOT",
+        "v1_19_R2" toNms "1.19.3-R0.1-SNAPSHOT",
+        "v1_19_R3" toNms "1.19.4-R0.1-SNAPSHOT",
+        "v1_20_R1" toNms "1.20.1-R0.1-SNAPSHOT",
+        "v1_20_R2" toNms "1.20.2-R0.1-SNAPSHOT", */
+        "v1_20_R3" toNms "1.20.4-R0.1-SNAPSHOT"
+)
+
+SUPPORTED_VERSIONS.forEach {
+    project(":nms:${it.nmsVersion}") {
+        apply(plugin = "java")
+        apply(plugin = "io.papermc.paperweight.userdev")
+
+        dependencies {
+            compileOnly("io.papermc.paper:paper-api:${it.serverVersion}")
+            implementation(project(":core"))
+            paperDevBundle(it.serverVersion)
+        }
+    }
 }
 
 group = "eu.endercentral.crazy_advancements"
 version = "2.1.17"
 
-repositories {
-    mavenCentral()
+allprojects {
+    apply(plugin = "java")
+
+    repositories {
+        mavenCentral()
+        maven("https://papermc.io/repo/repository/maven-public/")
+    }
+
+    dependencies {
+        compileOnly("io.papermc.paper:paper-api:1.20.4-R0.1-SNAPSHOT")
+    }
+
+    java {
+        toolchain.languageVersion.set(JavaLanguageVersion.of(17))
+    }
+
+    tasks {
+        compileJava {
+            options.encoding = Charsets.UTF_8.name()
+            options.release.set(17)
+            dependsOn(clean)
+        }
+    }
 }
 
 dependencies {
-    paperweight.paperDevBundle("1.20.4-R0.1-SNAPSHOT")
-}
-
-java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(17))
+    implementation(project(":core"))
+    SUPPORTED_VERSIONS.forEach {
+        implementation(project(path = ":nms:${it.nmsVersion}", configuration = "reobf"))
+    }
 }
 
 tasks {
-    compileJava {
-        options.encoding = Charsets.UTF_8.name()
-        options.release.set(17)
-        dependsOn(clean)
+    shadowJar {
+        SUPPORTED_VERSIONS.forEach{dependsOn(":nms:${it.nmsVersion}:reobfJar") }
+        archiveClassifier.set("")
     }
 
-    jar.get().archiveFileName = "${name}-${version}-mojmap.jar"
+    build.get().dependsOn(shadowJar)
+}
+
+tasks.register<ShadowJar>("shadable") {
+    dependsOn(tasks.build)
+    SUPPORTED_VERSIONS.forEach{dependsOn(":nms:${it.nmsVersion}:reobfJar") }
+    configurations = tasks.shadowJar.get().configurations
+    archiveClassifier.set("shadable")
+
+    exclude("plugin.yml")
 }
 
 publishing {
     publications {
         create<MavenPublication>("maven") {
-            artifact(tasks.reobfJar)
-            artifact(tasks.jar).classifier = "mojmap"
+            artifact(tasks.build)
+            artifact(tasks.getByName("shadable"))
         }
     }
 }

@@ -1,9 +1,10 @@
 package eu.endercentral.crazy_advancements.advancement.progress;
 
 import com.google.common.collect.Iterables;
-import net.minecraft.advancements.AdvancementRequirements;
-import net.minecraft.advancements.Criterion;
-import net.minecraft.advancements.CriterionProgress;
+import eu.endercentral.crazy_advancements.nms.NMS;
+import eu.endercentral.crazy_advancements.nms.api.IAdvancementProgress;
+import eu.endercentral.crazy_advancements.nms.api.ICriterionProgress;
+import eu.endercentral.crazy_advancements.nms.api.WCriterion;
 
 import java.util.*;
 import java.util.stream.StreamSupport;
@@ -16,7 +17,7 @@ import java.util.stream.StreamSupport;
  */
 public class AdvancementProgress {
 	
-	private net.minecraft.advancements.AdvancementProgress nmsProgress = new net.minecraft.advancements.AdvancementProgress();
+	private IAdvancementProgress nmsProgress = NMS.get().newProgress();
 	private long lastUpdate = -1;
 	
 	/**
@@ -27,14 +28,14 @@ public class AdvancementProgress {
 	 * @deprecated Use AdvancementProgress(String[][] requirements) instead
 	 */
 	@Deprecated(forRemoval = true, since = "2.1.15")
-	public AdvancementProgress(Map<String, Criterion<?>> criteria, String[][] requirements) {
+	public AdvancementProgress(Map<String, WCriterion> criteria, String[][] requirements) {
 		List<List<String>> requirementsList = new ArrayList<>();
 		
 		for(String[] outer : requirements) {
 			requirementsList.add(Arrays.asList(outer));
 		}
 		
-		nmsProgress.update(new AdvancementRequirements(requirementsList));
+		nmsProgress.update(requirementsList);
 	}
 	
 	/**
@@ -50,7 +51,7 @@ public class AdvancementProgress {
 			requirementsList.add(Arrays.asList(outer));
 		}
 		
-		nmsProgress.update(new AdvancementRequirements(requirementsList));
+		nmsProgress.update(requirementsList);
 	}
 	
 	/**
@@ -66,7 +67,7 @@ public class AdvancementProgress {
 		
 		while(missingIterator.hasNext()) {
 			String next = missingIterator.next();
-			CriterionProgress criterionProgress = getCriterionProgress(next);
+			ICriterionProgress criterionProgress = getCriterionProgress(next);
 			setGranted(criterionProgress);
 			result = GenericResult.CHANGED;
 			setLastUpdate();
@@ -89,7 +90,7 @@ public class AdvancementProgress {
 		
 		while(current > 0 && awardedIterator.hasNext()) {
 			String next = awardedIterator.next();
-			CriterionProgress criterionProgress = getCriterionProgress(next);
+			ICriterionProgress criterionProgress = getCriterionProgress(next);
 			setUngranted(criterionProgress);
 			current--;
 			result = GenericResult.CHANGED;
@@ -111,7 +112,7 @@ public class AdvancementProgress {
 		
 		if(!doneBefore) {//Only grant criteria if the advancement is not already granted
 			for(String criterion : criteria) {
-				CriterionProgress criterionProgress = getCriterionProgress(criterion);
+				ICriterionProgress criterionProgress = getCriterionProgress(criterion);
 				if(criterionProgress != null && !isGranted(criterionProgress)) {
 					setGranted(criterionProgress);
 					result = GrantCriteriaResult.CHANGED;
@@ -136,7 +137,7 @@ public class AdvancementProgress {
 		GenericResult result = GenericResult.UNCHANGED;
 		
 		for(String criterion : criteria) {
-			CriterionProgress criterionProgress = getCriterionProgress(criterion);
+			ICriterionProgress criterionProgress = getCriterionProgress(criterion);
 			if(criterionProgress != null && isGranted(criterionProgress)) {
 				setUngranted(criterionProgress);
 				result = GenericResult.CHANGED;
@@ -166,7 +167,7 @@ public class AdvancementProgress {
 		
 		while(current < number && missingIterator.hasNext()) {
 			String next = missingIterator.next();
-			CriterionProgress criterionProgress = getCriterionProgress(next);
+			ICriterionProgress criterionProgress = getCriterionProgress(next);
 			setGranted(criterionProgress);
 			current++;
 			result = SetCriteriaResult.CHANGED;
@@ -175,7 +176,7 @@ public class AdvancementProgress {
 		
 		while(current > number && awardedIterator.hasNext()) {
 			String next = awardedIterator.next();
-			CriterionProgress criterionProgress = getCriterionProgress(next);
+			ICriterionProgress criterionProgress = getCriterionProgress(next);
 			setUngranted(criterionProgress);
 			current--;
 			result = SetCriteriaResult.CHANGED;
@@ -189,15 +190,15 @@ public class AdvancementProgress {
 		return result;
 	}
 	
-	private static void setGranted(CriterionProgress criterionProgress) {
+	private static void setGranted(ICriterionProgress criterionProgress) {
 		criterionProgress.grant();
 	}
 	
-	private static void setUngranted(CriterionProgress criterionProgress) {
+	private static void setUngranted(ICriterionProgress criterionProgress) {
 		criterionProgress.revoke();
 	}
 	
-	private static boolean isGranted(CriterionProgress criterionProgress) {
+	private static boolean isGranted(ICriterionProgress criterionProgress) {
 		return criterionProgress.isDone();
 	}
 	
@@ -234,7 +235,7 @@ public class AdvancementProgress {
 	 * @param name The Criterion Name
 	 * @return The CriterionProgress
 	 */
-	public CriterionProgress getCriterionProgress(String name) {
+	public ICriterionProgress getCriterionProgress(String name) {
 		return getNmsProgress().getCriterion(name);
 	}
 	
@@ -252,7 +253,7 @@ public class AdvancementProgress {
 	 * 
 	 * @return The nms progress instance
 	 */
-	public net.minecraft.advancements.AdvancementProgress getNmsProgress() {
+	public IAdvancementProgress getNmsProgress() {
 		return nmsProgress;
 	}
 	

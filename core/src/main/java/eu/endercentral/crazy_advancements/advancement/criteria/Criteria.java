@@ -1,8 +1,9 @@
 package eu.endercentral.crazy_advancements.advancement.criteria;
 
 import eu.endercentral.crazy_advancements.CrazyAdvancementsAPI;
-import net.minecraft.advancements.AdvancementRequirements;
-import net.minecraft.advancements.Criterion;
+import eu.endercentral.crazy_advancements.nms.NMS;
+import eu.endercentral.crazy_advancements.nms.api.WAdvancementRequirements;
+import eu.endercentral.crazy_advancements.nms.api.WCriterion;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,7 +25,7 @@ public class Criteria {
 	private final String[] actionNames;
 	private final String[][] requirements;
 	
-	private final HashMap<String, Criterion<?>> criteria = new HashMap<>();
+	private final HashMap<String, WCriterion> criteria = new HashMap<>();
 	
 	/**
 	 * Constructor for creating {@link CriteriaType} NUMBER which will require a certain number
@@ -107,14 +108,14 @@ public class Criteria {
 	 * 
 	 * @return The Requirements
 	 */
-	public AdvancementRequirements getAdvancementRequirements() {
+	public WAdvancementRequirements getAdvancementRequirements() {
 		List<List<String>> requirements = new ArrayList<>();
 		
 		for(String[] outer : this.requirements) {
 			requirements.add(Arrays.asList(outer));
 		}
 		
-		return new AdvancementRequirements(requirements);
+		return NMS.get().newRequirements(requirements);
 	}
 	
 	/**
@@ -122,8 +123,8 @@ public class Criteria {
 	 * 
 	 * @return The generated Criteria
 	 */
-	public HashMap<String, Criterion<?>> getCriteria() {
-		return new HashMap<String, Criterion<?>>(criteria);
+	public HashMap<String, WCriterion> getCriteria() {
+		return new HashMap<>(criteria);
 	}
 	
 	

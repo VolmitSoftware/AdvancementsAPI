@@ -12,16 +12,15 @@ import eu.endercentral.crazy_advancements.command.ProgressChangeOperation;
 import eu.endercentral.crazy_advancements.item.CustomItem;
 import eu.endercentral.crazy_advancements.item.SerializedCustomItem;
 import eu.endercentral.crazy_advancements.manager.AdvancementManager;
+import eu.endercentral.crazy_advancements.nms.NMS;
+import eu.endercentral.crazy_advancements.nms.api.IAdvancementPacketReceiver;
+import eu.endercentral.crazy_advancements.nms.api.WCriterion;
 import eu.endercentral.crazy_advancements.packet.AdvancementsPacket;
-import net.minecraft.advancements.Criterion;
-import net.minecraft.advancements.critereon.ImpossibleTrigger;
-import net.minecraft.network.protocol.game.ClientboundSelectAdvancementsTabPacket;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.craftbukkit.v1_20_R3.entity.CraftPlayer;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -61,11 +60,11 @@ public class CrazyAdvancementsAPI extends JavaPlugin implements Listener {
 	/**
 	 * Criterion Instance for Internal Use
 	 */
-	public static final Criterion<?> CRITERION = new Criterion<>(new ImpossibleTrigger(), new ImpossibleTrigger.TriggerInstance());
+	public static final WCriterion CRITERION = NMS.get().newCriterion();
 	
 	
 	
-	private static AdvancementPacketReceiver packetReciever;
+	private static IAdvancementPacketReceiver packetReciever;
 	private static HashMap<String, NameKey> activeTabs = new HashMap<>();
 	
 	private final List<CustomItem> customItems = new ArrayList<>();
@@ -276,7 +275,7 @@ public class CrazyAdvancementsAPI extends JavaPlugin implements Listener {
 	@Override
 	public void onEnable() {
 		//Init Packet Receiver
-		packetReciever = new AdvancementPacketReceiver();
+		packetReciever = NMS.get().newPacketReceiver();
 		
 		for(Player player : Bukkit.getOnlinePlayers()) {
 			packetReciever.initPlayer(player);
@@ -332,7 +331,7 @@ public class CrazyAdvancementsAPI extends JavaPlugin implements Listener {
 	
 	@EventHandler
 	public void onQuit(PlayerQuitEvent e) {
-		packetReciever.close(e.getPlayer(), packetReciever.getHandlers().get(e.getPlayer().getName()));
+		packetReciever.close(e.getPlayer());
 		
 		//Unload Progress in the File Advancement Manager
 		fileAdvancementManager.unloadProgress(e.getPlayer().getUniqueId());
@@ -368,10 +367,9 @@ public class CrazyAdvancementsAPI extends JavaPlugin implements Listener {
 		setActiveTab(player, rootAdvancement, true);
 	}
 	
-	static void setActiveTab(Player player, NameKey rootAdvancement, boolean update) {
+	public static void setActiveTab(Player player, NameKey rootAdvancement, boolean update) {
 		if(update) {
-			ClientboundSelectAdvancementsTabPacket packet = new ClientboundSelectAdvancementsTabPacket(rootAdvancement == null ? null : rootAdvancement.getMinecraftKey());
-			((CraftPlayer)player).getHandle().connection.send(packet);
+			NMS.get().setActiveTab(player, rootAdvancement);
 		}
 		activeTabs.put(player.getUniqueId().toString(), rootAdvancement);
 	}

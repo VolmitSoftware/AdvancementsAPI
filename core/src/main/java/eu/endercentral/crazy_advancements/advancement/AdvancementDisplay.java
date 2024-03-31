@@ -2,7 +2,6 @@ package eu.endercentral.crazy_advancements.advancement;
 
 import eu.endercentral.crazy_advancements.JSONMessage;
 import net.md_5.bungee.api.chat.TextComponent;
-import net.minecraft.advancements.AdvancementType;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -180,31 +179,15 @@ public class AdvancementDisplay {
 		/**
 		 * A Task has the default Frame and defaults to a green Color in Completion Messages
 		 */
-		TASK(AdvancementType.TASK),
+		TASK,
 		/**
 		 * A Goal has a rounded off Frame and defaults to a green Color in Completion Messages
 		 */
-		GOAL(AdvancementType.GOAL),
+		GOAL,
 		/**
 		 * A Challenge has a differently shaped Frame and defaults to a purple Color in Completion Messages and it's Toast plays a Sound when displayed
 		 */
-		CHALLENGE(AdvancementType.CHALLENGE)
-		;
-		
-		private AdvancementType nms;
-		
-		private AdvancementFrame(AdvancementType nms) {
-			this.nms = nms;
-		}
-		
-		/**
-		 * Get the NMS Representation of this AdvancementFrame
-		 * 
-		 * @return THE NMS Representation
-		 */
-		public AdvancementType getNMS() {
-			return nms;
-		}
+		CHALLENGE;
 		
 		/**
 		 * Parses the AdvancementFrame by it's name
