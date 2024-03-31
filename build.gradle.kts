@@ -89,7 +89,7 @@ tasks.register<ShadowJar>("shadable") {
 publishing {
     publications {
         create<MavenPublication>("maven") {
-            artifact(tasks.build)
+            artifact(tasks.shadowJar)
             artifact(tasks.getByName("shadable"))
         }
     }
