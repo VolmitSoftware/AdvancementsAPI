@@ -52,9 +52,6 @@ public class NMS {
     }
 
     private static Logger getLogger() {
-        CrazyAdvancementsAPI instance = CrazyAdvancementsAPI.getInstance();
-        if (instance == null)
-            return Logger.getLogger(CrazyAdvancementsAPI.class.getSimpleName());
-        return instance.getLogger();
+        return Logger.getLogger(CrazyAdvancementsAPI.class.getSimpleName());
     }
 }
